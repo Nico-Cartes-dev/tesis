@@ -1,0 +1,91 @@
+# Configuración de cámaras y zonas de interés (ROI)
+#
+# Las coordenadas van NORMALIZADAS (0.0 a 1.0), no en píxeles absolutos.
+# Esto es clave: si cambia la resolución de la cámara, el ROI sigue siendo válido.
+# x, y = esquina superior izquierda del polígono / bounding box del ROI.
+#
+# Podés definir el ROI como polígono (recomendado si la repisa está inclinada
+# o la cámara no está perfectamente frontal) o como rectángulo simple.
+
+cameras:
+  camara_01:
+    nombre: "Pasillo lácteos - góndola A"
+    resolucion_nativa: [1280, 720]   # ancho, alto en píxeles, tal cual la entrega la cámara
+    rois:
+      - id: "repisa_leches"
+        tipo: "poligono"   # "poligono" o "rectangulo"
+        # Puntos normalizados (x, y), en orden horario
+        puntos:
+          - [0.10, 0.35]
+          - [0.65, 0.33]
+          - [0.66, 0.55]
+          - [0.09, 0.57]
+        clase_objetivo: "leche"
+
+  camara_02:
+    nombre: "Pasillo lácteos - góndola B"
+    resolucion_nativa: [1920, 1080]
+    rois:
+      - id: "repisa_yogures"
+        tipo: "rectangulo"
+        # x_min, y_min, x_max, y_max normalizados
+        bbox: [0.12, 0.40, 0.70, 0.60]
+        clase_objetivo: "yogur"
+
+# Parámetros globales de preprocesamiento
+preprocesamiento:
+  denoise:
+    activo: true
+    metodo: "fastNlMeans"   # alternativas: "gaussian", "bilateral"
+    fuerza: 7
+  clahe:
+    activo: true
+    clip_limit: 2.0
+    tile_grid_size: [8, 8]
+  gamma:
+    # Corrección gamma (Gonzalez & Woods capítulo 3) — responde a kickoff "Gamma spec":
+    #   O(x,y) = c * I(x,y)^γ   → implementado via LUT: O = 255 * (I/255)^(1/gamma_valor)
+    #   gamma_valor < 1  → aclara (útil en pasillos muy oscuros)
+    #   gamma_valor = 1  → sin cambio
+    #   gamma_valor > 1  → oscurece (útil si hay zonas muy quemadas)
+    activo: false
+    gamma_valor: 1.0
+  super_resolucion:
+    activo: false   # activar solo si la resolución nativa es muy baja (<480p)
+    modelo: "realesrgan"
+    escala: 2
+
+# Criterio de alarma (stock faltante)
+alarma:
+  porcentaje_vacio_minimo: 0.35   # % del ROI considerado "vacío" para disparar alerta
+  tiempo_sostenido_seg: 3         # debe mantenerse vacío este tiempo antes de alertar
+  latencia_objetivo_seg: 1.0
+  latencia_maxima_seg: 5.0
+
+# Pronóstico / forecast: config para cuándo una repisa "tiende a acabarse rápido"
+pronostico:
+  horizonte_minutos: 180                       # hasta cuánto futuro predice (3hs default)
+  alertar_anticipada_si_t_menor_a_min: 30      # si se acaba EN MENOS de 30 min => alerta PROACTIVA naranja
+  muestreo_historico_cada_seg: 60              # cada cuánto se guarda una fila en data/stock_history.csv
+
+# Cálculo de stock (% ocupado / % vacío) — CÓMO se computa a partir de las detecciones YOLO
+stock:
+  # modo = cómo se calculan pct_ocupado / pct_vacío
+  #   'productos' (clásico): YOLO detecta PRODUCTOS (clase 1)
+  #                        % ocupado = área productos dentro ROI / área ROI
+  #                        % vacío   = 1 - ocupado
+  #   'huecos'    (nuevo, recomendado por tesis): YOLO detecta HUECOS VACÍOS en la línea (clase 0)
+  #                        % vacío   = área huecos / área ROI
+  #                        % ocupado = 1 - vacío
+  #   'mixto'     (más robusto): combina ambos
+  #                        % vacío   = max( área_huecos , 1 − área_productos_union_huecos ) / área_ROI
+  #                        (evita huecos no detectados cuando YOLO falla en una o la otra clase)
+  modo: 'mixto'
+
+  # Umbrales de área mínima (evita contar chamuscas / bounding boxes muy chicos por ruido)
+  area_min_rel_hueco: 0.01    # 1% = huecos menores a 1% del área ROI SE IGNORAN (ruido)
+  area_min_rel_producto: 0.005  # 0.5% = productos muy chicos o partículas se ignoran
+
+  # (opcional) si hay MÚLTIPLES huecos adyacentes, los podríamos unir antes de calcular área.
+  # Por ahora lo dejamos en 'false' para mantener el cálculo simple.
+  unir_huecos_adyacentes: false

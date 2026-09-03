@@ -1,0 +1,12 @@
+# Config de dataset en formato YOLO
+# Ajustar rutas y clases según tu etiquetado real.
+
+path: ../data/processed   # carpeta raíz del dataset (relativa a este archivo)
+train: images/train
+val: images/val
+
+# Clases: ejemplo mínimo para el enfoque "stock vs vacío".
+# Si vas a diferenciar por categoría de producto, agregá más clases acá.
+names:
+  0: vacio
+  1: producto

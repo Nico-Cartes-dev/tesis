@@ -1,0 +1,97 @@
+# ==============================================================================
+# Shelf Monitor — .gitignore optimizado para tesis de Computer Vision + YOLO
+# ==============================================================================
+
+# ---- Entornos virtuales / Python ------------------------------------------
+.venv/
+venv/
+env/
+ENV/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+.eggs/
+build/
+dist/
+sdist/
+*.manifest
+*.spec
+pip-log.txt
+pip-delete-this-directory.txt
+python_version*
+.Python
+.tox/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# ---- Datos crudos / procesados (NO subir imágenes / labels / videos) ------
+# (podés subir un .txt con link al drive donde esté el dataset real)
+data/raw/
+data/processed/
+data/labels/
+data/*.log
+data/*.csv
+# Si querés subir SOLO el yaml de config/data no hace falta tocar nada,
+# porque está en configs/... Lo que SÍ no se sube son imágenes y .txt YOLO.
+
+# ---- Pesos / checkpoints de modelos ---------------------------------------
+models/runs/
+models/*.pt
+models/*.pth
+models/*.onnx
+models/*.engine
+models/*.pkl
+models/forecasters/
+runs/                       # fallback por si ultralytics escribe acá
+
+# ---- Entorno / credenciales -----------------------------------------------
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+configs/*secret*.yaml
+configs/*private*.yaml
+
+# ---- Editor / IDE ---------------------------------------------------------
+.vscode/*
+!.vscode/settings.json.default
+!.vscode/launch.json.default
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# ---- Sistema operativo ----------------------------------------------------
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# ---- Jupyter / MLFlow / Wandb (si usaras) ---------------------------------
+.mlruns/
+wandb/
+outputs/
+*.ipynb_checkpoints
+
+# ---- Capturas de demos / logs generados en ejecución ----------------------
+docs/demo_*.png
+docs/ranking_riesgo_*.md
+
+# ---- Backups generados por los scripts de este repo -----------------------
+*.bak.*
+*.bak

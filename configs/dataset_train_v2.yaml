@@ -1,0 +1,9 @@
+# Dataset para la corrida v2; conserva train y omite de validacion sm_009
+# porque sus anotaciones originales contienen cajas fuera de la imagen.
+path: ../data/processed
+train: images/train
+val: val_train_v2.txt
+
+names:
+  0: vacio
+  1: producto
